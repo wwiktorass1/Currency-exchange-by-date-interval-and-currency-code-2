@@ -22,5 +22,5 @@ Programą galima paleisti per komandinę eilute, arba IDE aplinkoje.
 Kompiuteryje būtina turėti  JDK, JRE.
 
 
-
-Išvada: Programos užklausų veikimas datos intervalui greitesnis, nes mažiau reikia programai analizuoti XML dokmento duomenų.
+###Išvada:
+Programos užklausų veikimas datos intervalui greitesnis, nes mažiau reikia programai analizuoti XML dokmento duomenų.
