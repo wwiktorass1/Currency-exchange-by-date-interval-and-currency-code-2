@@ -1,3 +1,4 @@
+package CurrencyRates;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,10 +7,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
-import java.text.ParseException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -17,22 +14,17 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.util.*;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 public class FindCurrencyAmt {
 
-	private String date = "";
-	private String ccy = "";
 	int responseCode;
-	static private String maxDate = "";
+	static private String dateOfXml= "";
 	static private double amt;
 
 	public FindCurrencyAmt(String date, String ccy) throws IOException {
 
-		this.date = date;
-		this.ccy = ccy;
 		connectAppy(date, ccy);
 	}
 
@@ -40,6 +32,7 @@ public class FindCurrencyAmt {
 
 		String url = "http://old.lb.lt/webservices/fxrates/FxRates.asmx/getFxRates?tp=EU&dt=" + date;
 		String xml = crunchifyGetURLContents(url);
+
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		responseCode = con.getResponseCode();
@@ -49,9 +42,7 @@ public class FindCurrencyAmt {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.parse(new InputSource(new StringReader(xml)));
 			int sumOfFxRate = (int) countAllFxrate(document);
-			setAmt(getRateOfCurency(maxDate, document, sumOfFxRate, curency));
-			maxDate = maxDateOfXml(document, sumOfFxRate);
-			amt = getRateOfCurency(maxDate, document, sumOfFxRate, curency);
+			amt = getRateOfCurency(document, sumOfFxRate, curency);
 
 		} catch (Exception e) {
 
@@ -60,50 +51,28 @@ public class FindCurrencyAmt {
 
 	}
 
-	private static double getRateOfCurency(String maxDate, Document document, int sumOfFxRate, String curency)
+	private static double getRateOfCurency(Document document, int sumOfFxRate, String curency)
 			throws XPathExpressionException {
 		double amt1 = 0.0;
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
 
 		for (int j = 1; j <= sumOfFxRate; j++) {
-			XPathExpression expr = xpath.compile("/FxRates//FxRate[" + j + "]/Dt");
-			String dateOfXml = expr.evaluate(document, XPathConstants.STRING).toString();
 
 			XPathExpression expr2 = xpath.compile("/FxRates//FxRate[" + j + "]//CcyAmt[2]//Ccy");
 			String ccy = expr2.evaluate(document, XPathConstants.STRING).toString();
 
-			if ((dateOfXml.equals(maxDate)) && (ccy.equals(curency))) {
+			if (ccy.equals(curency)) {
 				XPathExpression expr3 = xpath.compile("/FxRates//FxRate[" + j + "]//CcyAmt[2]//Amt");
-				String Amtt = expr3.evaluate(document, XPathConstants.STRING).toString();
+				String amt = expr3.evaluate(document, XPathConstants.STRING).toString();
 
-				amt1 = Double.parseDouble(Amtt);
+				XPathExpression expr = xpath.compile("/FxRates//FxRate[" + j + "]/Dt");
+				dateOfXml = expr.evaluate(document, XPathConstants.STRING).toString();
+				amt1 = Double.parseDouble(amt);
 				break;
 			}
-			continue;
 		}
 		return amt1;
-
-	}
-
-	private static String maxDateOfXml(Document document, int sumOfFxRate)
-			throws ParseException, XPathExpressionException {
-		List<LocalDate> dates = new ArrayList<LocalDate>();
-
-		for (int i = 1; i <= sumOfFxRate; i++) {
-
-			XPathFactory xPathfactory = XPathFactory.newInstance();
-			XPath xpath = xPathfactory.newXPath();
-			XPathExpression expr = xpath.compile("/FxRates//FxRate[" + i + "]/Dt");
-			String dateOfXml = expr.evaluate(document, XPathConstants.STRING).toString();
-			LocalDate date = LocalDate.parse(dateOfXml);
-
-			dates.add(date);
-		}
-		LocalDate maxDate = dates.stream().max(Comparator.comparing(LocalDate::toEpochDay)).get();
-		String maxDateStr = maxDate.toString();
-
-		return maxDateStr;
 	}
 
 	private static double countAllFxrate(Document document) throws XPathExpressionException {
@@ -153,23 +122,12 @@ public class FindCurrencyAmt {
 		return amt;
 	}
 
-	public String getMaxDate() {
-		return maxDate;
-	}
-
-	public String getCcy() {
-		return ccy;
-	}
-
-	public String getDate() {
-		return date;
+	public String getCcyDate() {
+		return dateOfXml;
 	}
 
 	public int getResponeCode() {
 		return responseCode;
 	}
 
-	private void setAmt(double rateOfCurency) {
-
-	}
 }
