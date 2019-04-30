@@ -23,5 +23,5 @@ Kompiuteryje būtina turėti  JDK, JRE.
 
 
 ### Išvada:
-Programos užklausų veikimas datos intervalui greitesnis, nes mažiau reikia programai analizuoti XML dokmento duomenų.
+Programos užklausų veikimas datos ilgam kelių metų intervalui greitesnis, nes mažiau reikia programai analizuoti XML dokmento duomenų.
 Programos kodas su reikiamomis bibliotekomis: https://ufile.io/mcpbsexi.
