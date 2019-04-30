@@ -1,9 +1,9 @@
+package CurrencyRates;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -18,6 +18,7 @@ public class Main {
 	private static String date2 = "";
 	static Date date3 = null;
 	private static String inputCcy;
+	static LocalDate dateToday = LocalDate.now();
 
 	public static void main(String[] args) throws IOException, ParseException {
 		NumberFormat currencyDifferenceFormatter = new DecimalFormat("#0.0000");
@@ -30,9 +31,7 @@ public class Main {
 			System.exit(1);
 			break;
 		case 1:
-			date1 = "";
-			inputCcy = "";
-			date3 = null;
+
 			while (true) {
 				inputDate();
 				boolean loop1 = true;
@@ -44,38 +43,51 @@ public class Main {
 					int reponseCode = ccy.getResponeCode();
 					System.out.println("užklausos serverio atsakymas: " + reponseCode + "\n");
 					if (ccy.getAmt() != 0) {
-						if (date1.equals(ccy.getMaxDate()) || (date1 == ccy.getMaxDate())) {
-							System.out.println("------------------------------------------------------------");
-							System.out.println("Duomenys šios datos - " + ccy.getMaxDate() + ": ");
+						if (date1.equals(ccy.getCcyDate()) || (date1 == ccy.getCcyDate())) {
+							System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+							System.out.println("| Duomenys šios datos - " + ccy.getCcyDate() + ":                                                                                   |");
 
 						} else {
-							System.out.println("------------------------------------------------------------");
-							System.out.println(
-									"Jūsų nurodytai datai duomenų nėra (Savaitgalis, švenčių diena arba dar šios dienos duomenys nepateikti.");
+							System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+							System.out.println("| Jūsų nurodytai datai: " + date1
+									+ " duomenų nėra (Savaitgalis, švenčių diena arba dar šios dienos duomenys nepateikti."+"|");
 
-							System.out.println("Yra vėliausi duomenys šiai datai: " + ccy.getMaxDate() + " : ");
+							System.out.println("| Yra vėliausi duomenys šiai datai - " + ccy.getCcyDate() + " : " + "                                                                   |");
 						}
-						System.out.println("Valiutos: " + inputCcy + " kursas: " + ccy.getAmt() + " už vieną eurą.");
-						System.out.println("------------------------------------------------------------ \n");
+						System.out.println("| Valiutos: " + inputCcy + " kursas: " + ccy.getAmt() + " už vieną eurą." + "                                                                         |" );
+						System.out.println("----------------------------------------------------------------------------------------------------------------------- \n");
 						loop1 = false;
 
 					} else {
-						System.out.println("Klaidingas valiutos kodas, arba duomenų nėra.");
-						inputCcy();
+						LocalDate date3 = LocalDate.parse(date1);
+						LocalDate date4 = LocalDate.parse("2014-12-29");
+						if (date3.isBefore(date4)) {
+							System.out.println(
+									"Įvestai datai: " + date1 + " nėra duomenų arba klaidingas valiutos kodas.");
+							inputDate();
+							inputCcy = reader.nextLine();
+							inputCcy();
+						} else {
+							System.out.println("Klaidingas valiutos kodas.");
+							inputCcy();
+						}
 					}
 
 				} while (loop1);
 			}
 
 		case 2:
-			date1 = "";
-			inputCcy = "";
-			date3 = null;
+
 			while (true) {
 				inputDate();
 				inputDateTo();
-				while (datesNotEqual(date1, date2) == false) {
-					date2 = "";
+
+				if (datesNotEqual(date1) == true) {
+					System.out.println(
+							"Įvesta pirmoji data lygi šiandien " + dateToday + " dienai! Įveskite senesnę pirmą datą.");
+					inputDate();
+				}
+				if (datesNotEqual(date1, date2) == false) {
 					System.out.println("Įvestos vienodos datos, arba antra data mažesnė už pirmą!!!");
 					inputDateTo();
 				}
@@ -84,60 +96,80 @@ public class Main {
 				inputCcy();
 				do {
 					FindCurrencyAmt ccy1 = new FindCurrencyAmt(date1, inputCcy);
-					String dateOfFirstXml = ccy1.getMaxDate();
+					String dateOfFirstXml = ccy1.getCcyDate();
 					int reponseCode1 = ccy1.getResponeCode();
 					double amtFirstDate = ccy1.getAmt();
 
 					FindCurrencyAmt ccy2 = new FindCurrencyAmt(date2, inputCcy);
-					String dateOfSecondXml = ccy2.getMaxDate();
+					String dateOfSecondXml = ccy2.getCcyDate();
 					double amtSecondDate = ccy2.getAmt();
 					int reponseCode2 = ccy2.getResponeCode();
 
 					System.out.println("Pirmos užklausos serverio atsakymas: " + reponseCode1);
 					System.out.println("Antros užklausos serverio atsakymas: " + reponseCode2 + "\n");
-					if (dateOfFirstXml != dateOfSecondXml) {
-						if ((amtFirstDate != 0) || (amtSecondDate != 0)) {
-							if ((date2.equals(dateOfSecondXml) || (date2 == dateOfSecondXml))
-									&& (date1.equals(dateOfFirstXml) || (date1 == dateOfFirstXml))) {
-								System.out.println(
-										"----------------------------------------------------------------------");
-								System.out.println(
-										"Duomenys šio intervalo: " + dateOfFirstXml + " - " + dateOfSecondXml + ": ");
 
+					if (amtFirstDate != 0.0) {
+						if ((!dateOfFirstXml.equals(dateOfSecondXml)) || (amtSecondDate != 0.0)) {
+							if (amtSecondDate != 0.0) {
+								if ((date1.equals(dateOfSecondXml) || (date1 == dateOfSecondXml))
+										&& ((date2.equals(dateOfFirstXml) || (date2 == dateOfFirstXml)))) {
+									System.out.println(
+											"-----------------------------------------------------------------------------------------------------------------------------------------");
+									System.out.println("| Duomenys šio intervalo: " + dateOfFirstXml + " - "
+											+ dateOfSecondXml + ":                                                                    |");
+
+								} else {
+									System.out.println(
+											"-----------------------------------------------------------------------------------------------------------------------------------------");
+									System.out.println("| Jūsų nurodytam intervalui: " + date1 + " - " + date2
+											+ " duomenų nėra (Savaitgalis, švenčių diena arba dar šios dienos duomenys nepateikti. |");
+
+									System.out.println("| Yra artimiausi duomenys šiam intervalui: " + dateOfFirstXml
+											+ " - " + dateOfSecondXml + " :                                                                    |");
+								}
+								System.out.println("| Valiutos - " + inputCcy + " kursai: " + dateOfFirstXml + ": "
+										+ amtFirstDate + "  " + dateOfSecondXml + ": " + amtSecondDate+ ".                                                                         |");
+								if (amtFirstDate > amtSecondDate) {
+
+									System.out.println("| Valiutos kursas sumažėjo : -"
+											+ currencyDifferenceFormatter.format(amtFirstDate - amtSecondDate) + " "
+											+ inputCcy + " Euro atžvilgiu.                                                                                |");
+								} else if (amtFirstDate < amtSecondDate) {
+									System.out.println("| Valiutos kursas padidėjo: "
+											+ currencyDifferenceFormatter.format(amtSecondDate - amtFirstDate) + " "
+											+ inputCcy + " Euro atžvilgiu.                                                                                  |");
+								} else {
+									System.out.println("| Valiutos kursas liko nepakitęs ir yra lygus: " + amtFirstDate
+											+ " " + inputCcy + " Euro atžvilgiu.                                                                |");
+								}
+								System.out.println(
+										"----------------------------------------------------------------------------------------------------------------------------------------- \n");
+								loop1 = false;
 							} else {
-								System.out.println(
-										"--------------------------------------------------------------------");
-								System.out.println(
-										"Jūsų nurodytam intervalui duomenų nėra (Savaitgalis, švenčių diena arba dar šios dienos duomenys nepateikti.");
-
-								System.out.println("Yra vėliausi duomenys šiam intervalui: " + dateOfFirstXml + " - "
-										+ dateOfSecondXml + " : ");
+								System.out.println("Klaidingas valiutos kodas, arba duomenų nėra.");
+								inputCcy();
 							}
-							System.out.println("Valiutos: " + inputCcy + " kursai: " + dateOfFirstXml + ": "
-									+ amtFirstDate + "  " + dateOfSecondXml + ": " + amtSecondDate);
-							if (amtFirstDate > amtSecondDate) {
-
-								System.out.println("Valiutos kursas sumažėjo: "
-										+ currencyDifferenceFormatter.format(amtFirstDate - amtSecondDate) + " "
-										+ inputCcy + " Euro atžvilgiu");
-							} else if (amtFirstDate < amtSecondDate) {
-								System.out.println("Valiutos kursas padidėjo: "
-										+ currencyDifferenceFormatter.format(amtSecondDate - amtFirstDate) + " "
-										+ inputCcy + " Euro atžvilgiu");
-							} else {
-								System.out.println("Valiutos kursas liko nepakitęs ir yra lygus: " + amtFirstDate + " "
-										+ inputCcy + " Euro atžvilgiu");
-							}
-							System.out.println("-------------------------------------------------------------------- \n");
-							loop1 = false;
 						} else {
-							System.out.println("Klaidingas valiutos kodas, arba duomenų nėra.");
-							inputCcy();
+							System.out.println("Šiai datai: " + date2 + " dar nėra duomenų. Įveskite kitą datą.");
+							inputDateTo();
 						}
+
 					} else {
 
-						System.out.println("Nurodytam laiko intervalui duomenų nėra, įveskite didesnį intervalą.");
-						inputDateTo();
+						LocalDate date4 = LocalDate.parse(date1);
+						LocalDate date5 = LocalDate.parse("2014-12-29");
+						if (date4.isBefore(date5)) {
+							System.out.println("Įvestam intervalui: " + date1 + " - " + date2
+									+ " nėra duomenų arba klaidingas valiutos kodas.");
+							inputDate();
+							inputDateTo();
+							inputCcy = reader.nextLine();
+							inputCcy();
+						} else {
+							System.out.println("Klaidingas valiutos kodas.");
+							inputCcy();
+						}
+
 					}
 
 				} while (loop1);
@@ -145,6 +177,15 @@ public class Main {
 		default:
 			System.out.println("Nėra šio pasirinkimo!");
 			mainInput();
+		}
+	}
+
+	private static boolean datesNotEqual(String date) {
+		LocalDate date1 = LocalDate.parse(date);
+		if ((date1.isEqual(dateToday) == true)) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -160,14 +201,8 @@ public class Main {
 		}
 	}
 
-	private static void backToThePreviousMenu2() throws IOException, ParseException {
-		if ((inputCcy == "-1") || (inputCcy.equals("-1"))) {
-			main(null);
-		}
-	}
-
-	private static void backToThePreviousMenu() throws IOException, ParseException {
-		if ((date1 == "-1") || (date1.equals("-1"))) {
+	private static void backToThePreviousMenu(String value) throws IOException, ParseException {
+		if ((value == "-1") || (value.equals("-1"))) {
 			main(null);
 		}
 	}
@@ -190,7 +225,6 @@ public class Main {
 		return meniu;
 	}
 
-	@SuppressWarnings("deprecation")
 	private static String inputDate() throws IOException, ParseException {
 		boolean loop = true;
 		do {
@@ -198,78 +232,110 @@ public class Main {
 					"Įveskite datą, pvz: 2019-01-01. Jei norite grįžti į ankstesnį meniu rašykite -1 ir spauskite Enter");
 
 			date1 = reader.next();
-			backToThePreviousMenu();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			backToThePreviousMenu(date1);
 
-			try {
-				date3 = dateFormat.parse(date1);
-				int number = Integer.valueOf(date3.getYear() + "" + date3.getMonth() + "" + date3.getDay());
-				if (number > 11481) {
-					if (isValidDate(date1) == true) {
+			if (date1.length() == 10) {
+				if (isValidDate(date1) == true) {
+					LocalDate date3 = LocalDate.parse(date1);
+					LocalDate date4 = LocalDate.parse("2014-09-29");
 
-						loop = false;
+					if (dateToday.isEqual(date3)) {
+						if (date3.isAfter(date4)) {
+							loop = false;
+						} else {
+							System.out.println("Įvesta data yra senesnė nei 2014-09-30. Yra duomenys nuo 2014-09-30.");
+						}
 					} else {
-						System.out.println("Blogas datos formatas!!");
-						loop = true;
+						if (date3.isAfter(date4)) {
+							loop = false;
+						} else {
+							System.out.println("Įvesta data yra senesnė nei 2014-09-30. Yra duomenys nuo 2014-09-30.");
+							continue;
+						}
+						if (date3.isBefore(dateToday)) {
+							loop = false;
+						} else {
+							System.out.println("Įvesta data yra didesnė už šiandienos - " + dateToday + " datą.");
+							loop = true;
+						}
 					}
 				} else {
-					System.out.println("Įvesta data senesnė nei 2014-09-30. Yra duomenys nuo 2014-09-30.");
+					System.out.println("Blogas datos formatas!!");
+					loop = true;
 				}
-			} catch (ParseException e) {
-				System.out.println("Blogas datos formatas!");
+			} else {
+				System.out.println("Blogas datos ilgis!");
+				date1 = "";
 			}
 		} while (loop);
 
 		return date1;
 	}
 
-	@SuppressWarnings("deprecation")
 	private static String inputDateTo() throws IOException, ParseException {
 		boolean loop = true;
 		do {
-			System.out.println(
-					"Įveskite galine intervalo datą, pvz: 2019-01-30. Jei norite grįžti į ankstesnį meniu rašykite -1 ir spauskite Enter.");
+			System.out.println("Įveskite galine intervalo datą, pvz: " + dateToday
+					+ ". Jei norite grįžti į ankstesnį meniu rašykite -1 ir spauskite Enter.");
 
 			date2 = reader.next();
-			backToThePreviousMenu();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			backToThePreviousMenu(date2);
+			if (date2.length() == 10) {
 
-			try {
-				date3 = dateFormat.parse(date2);
-				int number = Integer.valueOf(date3.getYear() + "" + date3.getMonth() + "" + date3.getDay());
-				if (number > 11481) {
-					if (isValidDate(date2) == true) {
+				if (isValidDate(date2) == true) {
+					LocalDate date3 = LocalDate.parse(date2);
+					LocalDate date4 = LocalDate.parse("2014-09-29");
 
-						loop = false;
+					if (dateToday.isEqual(date3)) {
+						if (date3.isAfter(date4)) {
+							loop = false;
+						} else {
+							System.out.println("Įvesta data yra senesnė nei 2014-09-30. Yra duomenys nuo 2014-09-30.");
+						}
 					} else {
-						System.out.println("Blogas datos formatas!!");
-						loop = true;
+
+						if (date3.isAfter(date4)) {
+							loop = false;
+						} else {
+							System.out.println("Įvesta data yra senesnė nei 2014-09-30. Yra duomenys nuo 2014-09-30.");
+						}
+						if (dateToday.isAfter(date3)) {
+							loop = false;
+						} else {
+							System.out.println("Įvesta data yra didesnė už šiandienos - " + dateToday + " datą.");
+							loop = true;
+						}
 					}
 				} else {
-					System.out.println("Įvesta data senesnė nei 2014-09-30. Yra duomenys nuo 2014-09-30.");
+					System.out.println("Blogas datos formatas!!");
+					loop = true;
 				}
-			} catch (ParseException e) {
-				System.out.println("Blogas datos formatas!");
+
+			} else {
+				System.out.println("Blogas datos ilgis!");
+				loop = true;
 			}
+
 		} while (loop);
 
 		return date2;
 	}
 
 	private static boolean isValidDate(String d) {
-		String regex = "^([1-2]{1}[0-9]{3}[-]?((0[13-9]|1[012])[-]?(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])[-]?31|02[-/]?(0[1-9]|1[0-9]|2[0-8]))|([0-9]{2}(([2468][048]|[02468][48])|[13579][26])|([13579][26]|[02468][048]|0[0-9]|1[0-6])00)[-]?02[-/]?29)$";
+		String regex = "^([1-2]{1}[0-9]{3}[-]?((0[13-9]|1[012])[-]?(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])[-]?31|02[-]?(0[1-9]|1[0-9]|2[0-8]))|([0-9]{2}(([2468][048]|[02468][48])|[13579][26])|([13579][26]|[02468][048]|0[0-9]|1[0-6])00)[-]?02[-/]?29)$";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher((CharSequence) d);
 		return matcher.matches();
 	}
 
 	private static String inputCcy() throws IOException, ParseException {
+
 		boolean loop = true;
 		do {
 			System.out.println(
-					"Įveskite valiutos kodą iš trijų raidžių.        Jei norite grįžti į ankstesnį meniu rašykite -1 ir spauskite Enter.");
+					"Įveskite valiutos kodą iš trijų raidžių.  Jei norite grįžti į ankstesnį meniu rašykite -1 ir spauskite Enter.");
 			inputCcy = reader.nextLine().toUpperCase();
-			backToThePreviousMenu2();
+			backToThePreviousMenu(inputCcy);
 			try {
 				if (isValidCcy(inputCcy) == true) {
 
