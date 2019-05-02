@@ -75,18 +75,13 @@ public class Main {
 
 				} while (loop1);
 			}
-
 		case 2:
 
 			while (true) {
 				inputDate();
+				areFirstDateEqualToday(date1);
+				
 				inputDateTo();
-
-				if (datesNotEqual(date1) == true) {
-					System.out.println(
-							"Įvesta pirmoji data lygi šiandien " + dateToday + " dienai! Įveskite senesnę pirmą datą.");
-					inputDate();
-				}
 				if (datesNotEqual(date1, date2) == false) {
 					System.out.println("Įvestos vienodos datos, arba antra data mažesnė už pirmą!!!");
 					inputDateTo();
@@ -178,6 +173,15 @@ public class Main {
 			System.out.println("Nėra šio pasirinkimo!");
 			mainInput();
 		}
+	}
+
+	private static void areFirstDateEqualToday(String date12) throws IOException, ParseException {
+		if (datesNotEqual(date12) == true) {
+			System.out.println(
+					"Įvesta pirmoji data lygi šiandien " + dateToday + " dienai! Įveskite senesnę pirmą datą.");
+			inputDate();
+			areFirstDateEqualToday(date1);
+		}		
 	}
 
 	private static boolean datesNotEqual(String date) {
