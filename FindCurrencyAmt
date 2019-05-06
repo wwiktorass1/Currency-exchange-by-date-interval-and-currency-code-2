@@ -1,4 +1,5 @@
 package CurrencyRates;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,6 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -20,8 +23,9 @@ import org.xml.sax.InputSource;
 public class FindCurrencyAmt {
 
 	int responseCode;
-	static private String dateOfXml= "";
+	static private String dateOfXml = "";
 	static private double amt;
+	static private List<String> ccyList = new ArrayList<String>();
 
 	public FindCurrencyAmt(String date, String ccy) throws IOException {
 
@@ -32,7 +36,7 @@ public class FindCurrencyAmt {
 
 		String url = "http://old.lb.lt/webservices/fxrates/FxRates.asmx/getFxRates?tp=EU&dt=" + date;
 		String xml = crunchifyGetURLContents(url);
-
+		// System.out.println(xml);
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		responseCode = con.getResponseCode();
@@ -41,14 +45,32 @@ public class FindCurrencyAmt {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.parse(new InputSource(new StringReader(xml)));
+
 			int sumOfFxRate = (int) countAllFxrate(document);
 			amt = getRateOfCurency(document, sumOfFxRate, curency);
+			ccyList.clear();
+			ccyList = getAllCcyOfxml(document, sumOfFxRate);
 
 		} catch (Exception e) {
 
 			System.out.println("nėra ryšio su URL:" + url);
 		}
 
+	}
+
+	private List<String> getAllCcyOfxml(Document document, int sumOfFxRate) throws XPathExpressionException {
+
+		for (int i = 1; i <= sumOfFxRate; i++) {
+
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			XPathExpression expr = xpath.compile("/FxRates//FxRate[" + i + "]//CcyAmt[2]//Ccy");
+			String ccy = expr.evaluate(document, XPathConstants.STRING).toString();
+
+			ccyList.add(ccy);
+		}
+
+		return ccyList;
 	}
 
 	private static double getRateOfCurency(Document document, int sumOfFxRate, String curency)
@@ -59,7 +81,7 @@ public class FindCurrencyAmt {
 
 		for (int j = 1; j <= sumOfFxRate; j++) {
 
-			XPathExpression expr2 = xpath.compile("/FxRates//FxRate[" + j + "]//CcyAmt[2]//Ccy");
+			XPathExpression expr2 = xpath.compile("FxRates//FxRate[" + j + "]//CcyAmt[2]//Ccy");
 			String ccy = expr2.evaluate(document, XPathConstants.STRING).toString();
 
 			if (ccy.equals(curency)) {
@@ -111,7 +133,7 @@ public class FindCurrencyAmt {
 			}
 			in.close();
 		} catch (Exception e) {
-			throw new RuntimeException("nėra ryšio su URL:" + myURL, e);
+			throw new RuntimeException("nėra ryšio su URL:" + myURL);
 
 		}
 
@@ -124,6 +146,10 @@ public class FindCurrencyAmt {
 
 	public String getCcyDate() {
 		return dateOfXml;
+	}
+
+	public List<String> getCcyList() {
+		return ccyList;
 	}
 
 	public int getResponeCode() {
